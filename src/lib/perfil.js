@@ -1,3 +1,9 @@
+export const PERFIS = [
+  { id: 'user', nome: 'Usuário', descricao: 'Registre e gerencie seus embarques' },
+  { id: 'hcc', nome: 'HCC', descricao: 'Consulte dados de embarques (somente leitura)' },
+  { id: 'admin', nome: 'Admin', descricao: 'Acesso ao painel administrativo' }
+];
+
 export function getPerfil() {
   try {
     return localStorage.getItem('perfil') || 'user';
@@ -12,4 +18,4 @@ export function setPerfil(value) {
   } catch {}
 }
 
-export default { getPerfil, setPerfil };
+export default { PERFIS, getPerfil, setPerfil };
