@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 
-export function usePresencaOnline() {
+export function usePresencaOnline(userId) {
   const [online, setOnline] = useState(false);
+
   useEffect(() => {
-    setOnline(true);
-    return () => setOnline(false);
-  }, []);
+    // placeholder: simula presença online
+    setOnline(Math.random() > 0.7);
+  }, [userId]);
+
   return online;
 }
 

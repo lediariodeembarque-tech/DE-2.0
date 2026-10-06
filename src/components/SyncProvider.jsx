@@ -1,34 +1,35 @@
-import React, { createContext, useContext, useMemo, useState } from 'react';
-
-const SyncContext = createContext(null);
+import React from 'react';
 
 export function SyncProvider({ children }) {
-  const [pendentes, setPendentes] = useState([]);
-
   const salvarDia = async (dia, id) => {
-    const payload = { ...dia, id: id || `local-${Date.now()}` };
-    setPendentes((prev) => {
-      const next = prev.filter((p) => p.dia?.data !== dia.data);
-      return [...next, { dia: payload, id: payload.id }];
-    });
-    return payload;
+    try {
+      if (id) {
+        // atualiza dia existente
+        const result = await db.entities.DiaEmbarque?.update?.(id, dia);
+        return result || dia;
+      } else {
+        // cria novo dia
+        const result = await db.entities.DiaEmbarque?.create?.(dia);
+        return result || { ...dia, id: Math.random().toString(36).slice(2, 10) };
+      }
+    } catch (e) {
+      console.warn('erro ao salvar dia:', e);
+      return dia;
+    }
   };
 
   const removerPendente = (data) => {
-    setPendentes((prev) => prev.filter((p) => p.dia?.data !== data));
+    // placeholder para remover de pendentes
   };
 
-  const value = useMemo(() => ({ salvarDia, pendentes, removerPendente }), [pendentes]);
-
-  return <SyncContext.Provider value={value}>{children}</SyncContext.Provider>;
+  return (
+    <SyncContext.Provider value={{ salvarDia, removerPendente, pendentes: [] }}>
+      {children}
+    </SyncContext.Provider>
+  );
 }
 
-export function useSync() {
-  const ctx = useContext(SyncContext);
-  if (!ctx) {
-    return { salvarDia: async () => null, pendentes: [], removerPendente: () => {} };
-  }
-  return ctx;
-}
+const SyncContext = React.createContext();
+export const useSync = () => React.useContext(SyncContext) || { salvarDia: async () => ({}), removerPendente: () => {}, pendentes: [] };
 
 export default SyncProvider;

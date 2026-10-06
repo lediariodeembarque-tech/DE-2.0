@@ -1,11 +1,10 @@
 export function safeReturnTo() {
   try {
     const params = new URLSearchParams(window.location.search);
-    const raw = params.get('returnTo') || '/diario';
-    return raw.startsWith('/') ? raw : '/diario';
-  } catch {
-    return '/diario';
-  }
+    const returnTo = params.get('returnTo');
+    if (returnTo && returnTo.startsWith('/')) return returnTo;
+  } catch {}
+  return '/';
 }
 
 export default safeReturnTo;

@@ -1,52 +1,78 @@
-import React from 'react';
-import { Plane } from 'lucide-react';
-import { StatusLuz } from './StatusLuz.jsx';
+import React, { useState } from 'react';
+import { ChevronDown, Trash2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-export function estadoVoo(voo = {}) {
-  if (!voo || !voo.voo) return 'nao_iniciado';
-  if (voo.terminoEmbarque || voo.total) return 'concluido';
-  if (voo.inicioEmbarque || voo.saida || voo.horario) return 'em_andamento';
-  return 'nao_iniciado';
-}
+export function CartaoVoo({ voo, indice, dia, usuario, onChange, onRemover, readOnly = false, defaultOpen = false }) {
+  const [aberto, setAberto] = useState(defaultOpen);
 
-export function CartaoVoo({ voo = {}, indice = 0, dia, usuario, onChange, onRemover, readOnly, defaultOpen = false }) {
-  const [open, setOpen] = React.useState(defaultOpen);
-  const st = estadoVoo(voo);
+  const updateVoo = (campo, valor) => {
+    onChange?.({ ...voo, [campo]: valor });
+  };
 
   return (
-    <div className="painel rounded-2xl p-3">
-      <button type="button" onClick={() => setOpen((v) => !v)} className="flex w-full items-center justify-between gap-3 text-left">
-        <div className="flex items-center gap-3">
-          <StatusLuz estado={st} />
-          <div>
-            <div className="font-display text-sm font-bold tracking-wide text-slate-100">Voo {voo.voo || `#${indice + 1}`}</div>
-            <div className="text-[11px] text-slate-400">{voo.destino || 'Destino não informado'} · {voo.horario || 'Horário —'}</div>
+    <div className="painel rounded-xl">
+      <button
+        type="button"
+        onClick={() => setAberto(!aberto)}
+        className="flex w-full items-center gap-3 p-3 text-left"
+      >
+        <div className="flex-1">
+          <div className="font-display font-bold tracking-wide text-slate-100 font-mono">
+            {voo.voo || `Voo ${indice + 1}`} {voo.destino && `→ ${voo.destino}`}
+          </div>
+          <div className="text-xs text-slate-400">
+            {voo.horario || '—'} · {usuario || '—'}
           </div>
         </div>
-        <div className="flex items-center gap-2 text-slate-400">
-          <Plane size={14} />
-          <span className="text-xs">{st}</span>
-        </div>
+        <ChevronDown size={18} className={cn('text-slate-400 transition', aberto && 'rotate-180')} />
       </button>
 
-      {open && (
-        <div className="mt-3 space-y-3 border-t border-white/10 pt-3">
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            <input value={voo.voo || ''} onChange={(e) => onChange?.({ ...voo, voo: e.target.value })} disabled={readOnly} className="rounded-lg border border-white/10 bg-slate-950/50 px-2 py-2 text-slate-100" placeholder="Voo" />
-            <input value={voo.destino || ''} onChange={(e) => onChange?.({ ...voo, destino: e.target.value })} disabled={readOnly} className="rounded-lg border border-white/10 bg-slate-950/50 px-2 py-2 text-slate-100" placeholder="Destino" />
+      {aberto && (
+        <div className="border-t border-white/10 p-3 space-y-3">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <input
+              type="text"
+              value={voo.voo || ''}
+              onChange={(e) => updateVoo('voo', e.target.value)}
+              placeholder="Voo"
+              disabled={readOnly}
+              className="rounded-lg border border-white/10 bg-slate-900/60 px-2 py-1.5 text-xs outline-none"
+            />
+            <input
+              type="text"
+              value={voo.destino || ''}
+              onChange={(e) => updateVoo('destino', e.target.value)}
+              placeholder="Destino"
+              disabled={readOnly}
+              className="rounded-lg border border-white/10 bg-slate-900/60 px-2 py-1.5 text-xs outline-none"
+            />
+            <input
+              type="time"
+              value={voo.horario || ''}
+              onChange={(e) => updateVoo('horario', e.target.value)}
+              disabled={readOnly}
+              className="rounded-lg border border-white/10 bg-slate-900/60 px-2 py-1.5 text-xs outline-none"
+            />
+            {!readOnly && (
+              <button
+                onClick={() => onRemover?.()}
+                className="rounded-lg p-2 text-red-400 hover:bg-red-400/10"
+              >
+                <Trash2 size={16} />
+              </button>
+            )}
           </div>
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            <input value={voo.horario || ''} onChange={(e) => onChange?.({ ...voo, horario: e.target.value })} disabled={readOnly} className="rounded-lg border border-white/10 bg-slate-950/50 px-2 py-2 text-slate-100" placeholder="Horário" />
-            <input value={voo.porta || ''} onChange={(e) => onChange?.({ ...voo, porta: e.target.value })} disabled={readOnly} className="rounded-lg border border-white/10 bg-slate-950/50 px-2 py-2 text-slate-100" placeholder="Porta" />
-          </div>
-          <textarea value={voo.observacoes || ''} onChange={(e) => onChange?.({ ...voo, observacoes: e.target.value })} disabled={readOnly} rows={3} className="w-full rounded-lg border border-white/10 bg-slate-950/50 px-2 py-2 text-sm text-slate-100" placeholder="Observações" />
-          {!readOnly && (
-            <button type="button" onClick={onRemover} className="text-xs font-semibold text-red-400">Excluir voo</button>
-          )}
         </div>
       )}
     </div>
   );
+}
+
+export function estadoVoo(voo) {
+  if (!voo) return 'nao_iniciado';
+  if (voo.terminoEmbarque) return 'concluido';
+  if (voo.inicioEmbarque) return 'em_andamento';
+  return 'nao_iniciado';
 }
 
 export default CartaoVoo;
